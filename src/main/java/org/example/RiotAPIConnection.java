@@ -1,5 +1,8 @@
 package org.example;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -32,25 +35,17 @@ public class RiotAPIConnection {
         String url = FIRST_EUROPE_PART + "/riot/account/v1/accounts/by-riot-id/" +
                 playerName + "/EUNE" + AUTHORIZATION;
 
-        String res = ConnectAndGet(url);
-        String[] words = res.split("[\"{}:,]");
-
-        List<String> lista = new ArrayList<>();
-        for (String word : words) {
-            if(word != null && !word.isEmpty()){
-                lista.add(word);
-            }
-        }
-        return lista.get(1);
+        JsonObject res = ConnectAndGet(url);
+        return res.get("puuid").getAsString();
     }
 
     private static String getPlayerInfo(String playerName) throws IOException, InterruptedException {
         String puuid = getPLayerPUUID(playerName);
         String url = FIRST_URL_PART + "/lol/summoner/v4/summoners/by-puuid/" + puuid + AUTHORIZATION;
-        return ConnectAndGet(url);
+        return ConnectAndGet(url).toString();
     }
 
-    private static String ConnectAndGet(String url) throws IOException, InterruptedException {
+    private static JsonObject ConnectAndGet(String url) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -61,11 +56,11 @@ public class RiotAPIConnection {
 
         if(response.statusCode() == 200){
             System.out.println("Info retrieved successfully!");
-            return response.body();
+            return JsonParser.parseString(response.body()).getAsJsonObject();
         }
         else{
             System.out.println("Connection ERROR! Code: " + response.statusCode());
-            return "";
+            return null;
         }
     }
 
