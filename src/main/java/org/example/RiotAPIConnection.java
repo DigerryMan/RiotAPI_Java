@@ -20,11 +20,10 @@ public class RiotAPIConnection {
     private static final String AUTHORIZATION = "?api_key=" + API_KEY;
     private static final List<String> NICKNAMES = new ArrayList<>(Arrays.asList("Pan Stanisław", "Yoyosim03"));
 
-    public static void connect(int summonerIndex) throws IOException, InterruptedException {
-        System.out.println(
-            getPlayerInfo(NICKNAMES.get(summonerIndex))
-        );
-
+    public static JsonObject getPlayerInfo(int summonerIndex) throws IOException, InterruptedException {
+        String puuid = getPLayerPUUID(NICKNAMES.get(summonerIndex));
+        String url = FIRST_URL_PART + "/lol/summoner/v4/summoners/by-puuid/" + puuid + AUTHORIZATION;
+        return ConnectAndGet(url);
     }
 
     private static String getPLayerPUUID(String playerName) throws IOException, InterruptedException{
@@ -39,13 +38,7 @@ public class RiotAPIConnection {
         return res.get("puuid").getAsString();
     }
 
-    private static String getPlayerInfo(String playerName) throws IOException, InterruptedException {
-        String puuid = getPLayerPUUID(playerName);
-        String url = FIRST_URL_PART + "/lol/summoner/v4/summoners/by-puuid/" + puuid + AUTHORIZATION;
-        return ConnectAndGet(url).toString();
-    }
-
-    private static JsonObject ConnectAndGet(String url) throws IOException, InterruptedException {
+    static JsonObject ConnectAndGet(String url) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
